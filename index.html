@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1f2c25">
   <title>The Household</title>
   <link rel="stylesheet" href="styles.css?v=2">
-  <link rel="stylesheet" href="management.css?v=7">
+  <link rel="stylesheet" href="management.css?v=8">
 </head>
 <body>
   <main id="app">
@@ -61,6 +61,7 @@
       </header>
       <nav class="game-tabs" aria-label="Household sections">
         <button class="game-tab is-active" id="household-tab" type="button">Household</button>
+        <button class="game-tab" id="family-tab" type="button">Family</button>
         <button class="game-tab" id="chronicle-tab" type="button">Family chronicle</button>
       </nav>
       <div id="household-view">
@@ -68,7 +69,6 @@
         <div><span>Ready funds</span><strong id="funds">£0</strong></div>
         <div><span>Annual income</span><strong id="income">£0</strong></div>
         <div><span>Reputation</span><strong id="reputation">0</strong></div>
-        <div><span>Family accord</span><strong id="harmony">0</strong></div>
       </section>
       <div class="game-grid">
         <section class="panel correspondence">
@@ -79,13 +79,18 @@
         </section>
         <aside class="panel household">
           <p class="eyebrow">Household book</p>
-          <h3>Seasonal accounts</h3>
+          <h3>Finances</h3>
           <div id="accounts"></div>
           <h3>Staff</h3>
           <div id="staff"></div>
         </aside>
       </div>
       </div>
+      <section id="family-view" class="family panel" hidden aria-labelledby="family-title">
+        <p class="eyebrow">The family register</p>
+        <h3 id="family-title">The family</h3>
+        <div id="family-list" class="family-list"></div>
+      </section>
       <section id="chronicle-view" class="chronicle panel" hidden aria-labelledby="chronicle-title">
         <p class="eyebrow">The family record</p>
         <h3 id="chronicle-title">Family chronicle</h3>
@@ -99,7 +104,7 @@
       <button class="primary" id="continue-month">Continue to the next season</button>
     </dialog>
   </main>
-  <script src="game.js?v=6"></script>
-  <script src="seasonal.js?v=7"></script>
+  <script src="game.js?v=7"></script>
+  <script src="seasonal.js?v=8"></script>
 </body>
 </html>
