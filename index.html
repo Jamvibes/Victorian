@@ -1,0 +1,93 @@
+Exit code: 0
+Wall time: 0.6 seconds
+Output:
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1f2c25">
+  <title>The Household</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="management.css">
+</head>
+<body>
+  <main id="app">
+    <section id="welcome" class="welcome" aria-labelledby="game-title">
+      <div class="welcome__veil"></div>
+      <div class="welcome__content">
+        <p class="eyebrow">England · 1880</p>
+        <h1 id="game-title">The Household</h1>
+        <p class="lede">A family may inherit its circumstances.<br>Its legacy must be managed.</p>
+        <button class="primary" id="begin">Begin a new household</button>
+        <button class="text-button" id="continue" hidden>Continue the household</button>
+      </div>
+      <p class="credit">A game of family, fortune, and reputation</p>
+    </section>
+
+    <section id="setup" class="paper screen" hidden aria-labelledby="setup-title">
+      <header class="masthead">
+        <button class="back" data-back="welcome" aria-label="Return to title">←</button>
+        <div><p class="eyebrow">The family register</p><h2 id="setup-title">Establish your household</h2></div>
+        <span>1880</span>
+      </header>
+      <form id="household-form">
+        <div class="setup-grid">
+          <fieldset>
+            <legend>I. Your name</legend>
+            <label>Given name<input name="givenName" required value="Eleanor" maxlength="24"></label>
+            <label>Family name<input name="familyName" required value="Hawthorne" maxlength="24"></label>
+          </fieldset>
+          <fieldset>
+            <legend>II. Your beginnings</legend>
+            <div id="origins" class="choices"></div>
+          </fieldset>
+          <fieldset>
+            <legend>III. Your partner</legend>
+            <label>Partner's given name<input name="partnerName" required value="Arthur" maxlength="24"></label>
+            <div id="matches" class="choices"></div>
+          </fieldset>
+        </div>
+        <aside id="prospect" class="prospect" aria-live="polite"></aside>
+        <div class="form-actions"><button type="submit" class="primary">Take possession of the house</button></div>
+      </form>
+    </section>
+
+    <section id="game" class="screen game" hidden aria-labelledby="house-name">
+      <header class="game-header">
+        <div><p class="eyebrow" id="date">January 1880</p><h2 id="house-name">Hawthorne House</h2></div>
+        <div class="header-actions"><button class="quiet" id="save">Save</button><button class="quiet" id="restart">New household</button></div>
+      </header>
+      <section class="ledger" aria-label="Household standing">
+        <div><span>Ready funds</span><strong id="funds">£0</strong></div>
+        <div><span>Annual income</span><strong id="income">£0</strong></div>
+        <div><span>Reputation</span><strong id="reputation">0</strong></div>
+        <div><span>Family accord</span><strong id="harmony">0</strong></div>
+        <div><span>Staff confidence</span><strong id="loyalty">0</strong></div>
+      </section>
+      <div class="game-grid">
+        <section class="panel correspondence">
+          <p class="eyebrow">This month's correspondence</p>
+          <h3 id="event-title"></h3>
+          <p id="event-body"></p>
+          <div id="event-choices" class="event-choices"></div>
+        </section>
+        <aside class="panel household">
+          <p class="eyebrow">Household book</p>
+          <h3>Monthly accounts</h3>
+          <div id="accounts"></div>
+          <h3>Staff</h3>
+          <div id="staff"></div>
+          <h3>Investments</h3>
+          <div id="investments"></div>
+        </aside>
+      </div>
+      <section class="chronicle panel"><p class="eyebrow">Family chronicle</p><ol id="chronicle"></ol></section>
+    </section>
+
+    <dialog id="ending"><div id="ending-content"></div><button class="primary" id="ending-restart">Begin another household</button></dialog>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
+
