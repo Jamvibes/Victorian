@@ -1,3 +1,8 @@
+.screen[hidden],
+[hidden] {
+  display: none !important;
+}
+
 .investment-row {
   align-items: center;
   border-bottom: 1px dotted var(--line);
@@ -30,5 +35,46 @@
 .holding {
   border-left: 2px solid var(--gold);
   padding-left: .6rem;
+}
+
+.month-account {
+  border-bottom: 3px double var(--line);
+  border-top: 3px double var(--line);
+  margin: 1rem 0 1.5rem;
+  padding: .7rem 0;
+}
+
+.month-account div {
+  display: flex;
+  justify-content: space-between;
+  padding: .3rem 0;
+}
+
+.month-account .total {
+  border-top: 1px solid var(--line);
+  font-weight: bold;
+  margin-top: .35rem;
+  padding-top: .65rem;
+}
+
+.summary-changes {
+  display: grid;
+  gap: .5rem;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 1rem 0;
+}
+
+.summary-changes div {
+  background: rgba(255,255,255,.32);
+  border: 1px solid var(--line);
+  padding: .65rem;
+  text-align: center;
+}
+
+.summary-changes span {
+  display: block;
+  font-size: .7rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
