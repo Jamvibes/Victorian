@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#1f2c25">
   <title>The Household</title>
   <link rel="stylesheet" href="styles.css?v=2">
-  <link rel="stylesheet" href="management.css?v=3">
+  <link rel="stylesheet" href="management.css?v=4">
 </head>
 <body>
   <main id="app">
     <section id="welcome" class="welcome" aria-labelledby="game-title">
       <div class="welcome__veil"></div>
       <div class="welcome__content">
-        <p class="eyebrow">England Â· 1880</p>
+        <p class="eyebrow">England &middot; 1880</p>
         <h1 id="game-title">The Household</h1>
         <p class="lede">A family may inherit its circumstances.<br>Its legacy must be managed.</p>
         <button class="primary" id="begin">Begin a new household</button>
@@ -24,7 +24,7 @@
 
     <section id="setup" class="paper screen" hidden aria-labelledby="setup-title">
       <header class="masthead">
-        <button class="back" data-back="welcome" aria-label="Return to title">â†</button>
+        <button class="back" data-back="welcome" aria-label="Return to title">←</button>
         <div><p class="eyebrow">The family register</p><h2 id="setup-title">Establish your household</h2></div>
         <span>1880</span>
       </header>
@@ -32,7 +32,9 @@
         <div class="setup-grid">
           <fieldset>
             <legend>I. Your name</legend>
-            <label>Given name<input name="givenName" required value="Eleanor" maxlength="24"></label>
+            <label>Given name
+              <span class="name-entry"><input name="givenName" required value="Eleanor" maxlength="24"><button type="button" class="randomize-name" id="randomize-player">Choose at random</button></span>
+            </label>
             <label>Family name<input name="familyName" required value="Hawthorne" maxlength="24"></label>
           </fieldset>
           <fieldset>
@@ -41,7 +43,9 @@
           </fieldset>
           <fieldset>
             <legend>III. Your partner</legend>
-            <label>Partner's given name<input name="partnerName" required value="Arthur" maxlength="24"></label>
+            <label>Partner's given name
+              <span class="name-entry"><input name="partnerName" required value="Arthur" maxlength="24"><button type="button" class="randomize-name" id="randomize-partner">Choose at random</button></span>
+            </label>
             <div id="matches" class="choices"></div>
           </fieldset>
         </div>
@@ -56,8 +60,8 @@
         <div class="header-actions"><button class="quiet" id="save">Save</button><button class="quiet" id="restart">New household</button></div>
       </header>
       <section class="ledger" aria-label="Household standing">
-        <div><span>Ready funds</span><strong id="funds">Â£0</strong></div>
-        <div><span>Annual income</span><strong id="income">Â£0</strong></div>
+        <div><span>Ready funds</span><strong id="funds">£0</strong></div>
+        <div><span>Annual income</span><strong id="income">£0</strong></div>
         <div><span>Reputation</span><strong id="reputation">0</strong></div>
         <div><span>Family accord</span><strong id="harmony">0</strong></div>
         <div><span>Staff confidence</span><strong id="loyalty">0</strong></div>
@@ -88,6 +92,6 @@
       <button class="primary" id="continue-month">Continue to the next month</button>
     </dialog>
   </main>
-  <script src="game.js?v=2"></script>
+  <script src="game.js?v=4"></script>
 </body>
 </html>
