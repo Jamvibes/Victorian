@@ -14,6 +14,35 @@
     url('assets/hawthorn-house.jpg');
 }
 
+.name-entry {
+  align-items: stretch;
+  display: flex;
+  gap: .5rem;
+  margin-top: .35rem;
+}
+
+.name-entry input { margin-top: 0; }
+
+.randomize-name {
+  background: rgba(255,255,255,.3);
+  border: 1px solid var(--line);
+  color: var(--red);
+  flex: 0 0 auto;
+  font-size: .66rem;
+  letter-spacing: .07em;
+  padding: .5rem .7rem;
+  text-transform: uppercase;
+}
+
+.randomize-name:hover {
+  background: rgba(255,255,255,.65);
+  border-color: var(--gold);
+}
+
+@media (max-width: 420px) {
+  .name-entry { flex-direction: column; }
+}
+
 .investment-row {
   align-items: center;
   border-bottom: 1px dotted var(--line);
