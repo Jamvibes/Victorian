@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.9 seconds
-Output:
 # The Household
 
 A browser-based management game about family, fortune, staff, and reputation in Victorian Britain.

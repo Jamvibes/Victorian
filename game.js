@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 1.2 seconds
-Output:
 const origins=[
  {id:'gentry',name:'The landed gentry',desc:'A respected name and a modest estate burdened by expectation.',funds:6200,income:1750,reputation:64,harmony:55,difficulty:'Comfortable'},
  {id:'trade',name:'A mercantile fortune',desc:'New money, abundant capital, and doors that do not always open.',funds:9800,income:2300,reputation:39,harmony:58,difficulty:'Prosperous'},
