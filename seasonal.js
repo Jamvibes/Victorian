@@ -2,7 +2,11 @@ const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const correspondencePerSeason = 3;
 
 function seasonalEventOrder() {
-  return shuffle([...Array(12)].map((_, index) => index % events.length));
+  const order = [];
+  for (let season = 0; season < 4; season++) {
+    order.push(...shuffle([...Array(events.length).keys()]).slice(0, correspondencePerSeason));
+  }
+  return order;
 }
 
 function migrateSeasonalState() {
