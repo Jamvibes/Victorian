@@ -2,6 +2,39 @@ const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
 // Change any one of these values to give that season more or fewer letters.
 const correspondenceCounts = [3, 3, 3, 3];
 
+function recordChronicle(text) {
+  state.chronicleOrder = (state.chronicleOrder || 0) + 1;
+  state.history.push({
+    text,
+    season: Math.min(state.season || 0, 3),
+    year: 1880,
+    order: state.chronicleOrder
+  });
+}
+
+function normalizeChronicle() {
+  const total = state.history.length;
+  state.history = state.history.map((entry, index) => {
+    if (typeof entry !== 'string') return entry;
+    return {
+      text: entry,
+      season: Math.min(state.season || 0, 3),
+      year: 1880,
+      order: total - index
+    };
+  });
+  state.chronicleOrder = Math.max(state.chronicleOrder || 0, ...state.history.map(entry => entry.order || 0));
+}
+
+function showGameTab(tab) {
+  const chronicleOpen = tab === 'chronicle';
+  $('#household-view').hidden = chronicleOpen;
+  $('#chronicle-view').hidden = !chronicleOpen;
+  $('#household-tab').classList.toggle('is-active', !chronicleOpen);
+  $('#chronicle-tab').classList.toggle('is-active', chronicleOpen);
+  if (chronicleOpen) renderHistory();
+}
+
 function personalizeCorrespondence(text) {
   return text
     .replaceAll('{partner}', state.partner)
@@ -53,11 +86,13 @@ newHousehold = function (data) {
     funds: o.funds + m.funds, income: o.income,
     reputation: o.reputation + m.reputation, harmony: o.harmony + m.harmony,
     loyalty: 55, investment: 0, holdings: [], staff: [...staffRoles],
-    history: [`${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`],
+    history: [{ text: `${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`, season: 0, year: 1880, order: 1 }],
+    chronicleOrder: 1,
     correspondencePlan: seasonalCorrespondencePlan()
   };
   saveState();
   show('game');
+  showGameTab('household');
   renderGame();
 };
 
@@ -95,7 +130,7 @@ resolveEvent = function (event, index) {
     };
   }
   Object.entries(choice.effects).forEach(([key, value]) => state[key] = (state[key] || 0) + value);
-  state.history.unshift(personalizedResult);
+  recordChronicle(personalizedResult);
   state.seasonResults.push(personalizedResult);
   clamp();
 
@@ -120,7 +155,7 @@ resolveEvent = function (event, index) {
     const returned = state.investment + change;
     const note = `The railway shares were sold for ${money(returned)}.`;
     state.funds += returned;
-    state.history.unshift(note);
+    recordChronicle(note);
     investmentNotes.push(note);
     state.investment = 0;
   }
@@ -154,7 +189,7 @@ settleHoldings = function () {
     const note = `${type.name} ${failed ? 'disappointed' : 'rewarded'} the family, returning ${money(returned)}.`;
     state.funds += returned;
     state.reputation += failed ? type.reputation - 1 : type.reputation;
-    state.history.unshift(note);
+    recordChronicle(note);
     notes.push(note);
     return false;
   });
@@ -166,7 +201,7 @@ function showSeasonSummary(season, results, before, account) {
   const investmentText = account.investmentNotes.length
     ? `<ul>${account.investmentNotes.map(note => `<li>${note}</li>`).join('')}</ul>`
     : '<p>No investment matured this season. Existing holdings remain exposed to future gain or loss.</p>';
-  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>Correspondence answered</h3><ol>${results.map(result => `<li>${result}</li>`).join('')}</ol><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff wages</span><strong>-${money(account.staffWages)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Family accord</span><strong>${signed(state.harmony - before.harmony)}</strong></div><div><span>Staff confidence</span><strong>${signed(state.loyalty - before.loyalty)}</strong></div></div>`;
+  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff wages</span><strong>-${money(account.staffWages)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Family accord</span><strong>${signed(state.harmony - before.harmony)}</strong></div><div><span>Staff confidence</span><strong>${signed(state.loyalty - before.loyalty)}</strong></div></div>`;
   $('#continue-month').textContent = finishAfterSummary ? 'Read the family legacy' : 'Continue to the next season';
   $('#month-summary').showModal();
 }
@@ -177,3 +212,12 @@ finish = function () {
   $('#ending').showModal();
   localStorage.removeItem('victorian-household');
 };
+
+renderHistory = function () {
+  normalizeChronicle();
+  const entries = [...state.history].sort((a, b) => (a.order || 0) - (b.order || 0));
+  $('#chronicle').innerHTML = entries.map(entry => `<article class="chronicle-entry"><time>${seasonNames[entry.season] || seasonNames[0]} ${entry.year || 1880}</time><p>${entry.text}</p></article>`).join('');
+};
+
+$('#household-tab').onclick = () => showGameTab('household');
+$('#chronicle-tab').onclick = () => showGameTab('chronicle');
