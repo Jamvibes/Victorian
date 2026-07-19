@@ -56,7 +56,7 @@
 
     <section id="game" class="screen game" hidden aria-labelledby="house-name">
       <header class="game-header">
-        <div><p class="eyebrow" id="date">January 1880</p><h2 id="house-name">Hawthorne House</h2></div>
+        <div><p class="eyebrow" id="date">Spring 1880</p><h2 id="house-name">Hawthorne House</h2></div>
         <div class="header-actions"><button class="quiet" id="save">Save</button><button class="quiet" id="restart">New household</button></div>
       </header>
       <section class="ledger" aria-label="Household standing">
@@ -68,14 +68,14 @@
       </section>
       <div class="game-grid">
         <section class="panel correspondence">
-          <p class="eyebrow">This month's correspondence</p>
+          <p class="eyebrow">This season's correspondence <span id="correspondence-progress"></span></p>
           <h3 id="event-title"></h3>
           <p id="event-body"></p>
           <div id="event-choices" class="event-choices"></div>
         </section>
         <aside class="panel household">
           <p class="eyebrow">Household book</p>
-          <h3>Monthly accounts</h3>
+          <h3>Seasonal accounts</h3>
           <div id="accounts"></div>
           <h3>Staff</h3>
           <div id="staff"></div>
@@ -89,9 +89,10 @@
     <dialog id="ending"><div id="ending-content"></div><button class="primary" id="ending-restart">Begin another household</button></dialog>
     <dialog id="month-summary" aria-labelledby="month-summary-title">
       <div id="month-summary-content"></div>
-      <button class="primary" id="continue-month">Continue to the next month</button>
+      <button class="primary" id="continue-month">Continue to the next season</button>
     </dialog>
   </main>
   <script src="game.js?v=5"></script>
+  <script src="seasonal.js?v=1"></script>
 </body>
 </html>
