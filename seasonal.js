@@ -110,8 +110,9 @@ newHousehold = function (data) {
     investment: 0, holdings: [], staff: [],
     history: [{ text: `${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`, season: 0, year: 1880, order: 1 }],
     chronicleOrder: 1,
-    correspondencePlan: seasonalCorrespondencePlan()
+    correspondencePlan: null
   };
+  state.correspondencePlan = seasonalCorrespondencePlan();
   saveState();
   show('game');
   showGameTab('household');
