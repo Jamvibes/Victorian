@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1f2c25">
   <title>The Household</title>
   <link rel="stylesheet" href="styles.css?v=2">
-  <link rel="stylesheet" href="management.css?v=5">
+  <link rel="stylesheet" href="management.css?v=6">
 </head>
 <body>
   <main id="app">
@@ -59,6 +59,11 @@
         <div><p class="eyebrow" id="date">Spring 1880</p><h2 id="house-name">Hawthorne House</h2></div>
         <div class="header-actions"><button class="quiet" id="save">Save</button><button class="quiet" id="restart">New household</button></div>
       </header>
+      <nav class="game-tabs" aria-label="Household sections">
+        <button class="game-tab is-active" id="household-tab" type="button">Household</button>
+        <button class="game-tab" id="chronicle-tab" type="button">Family chronicle</button>
+      </nav>
+      <div id="household-view">
       <section class="ledger" aria-label="Household standing">
         <div><span>Ready funds</span><strong id="funds">£0</strong></div>
         <div><span>Annual income</span><strong id="income">£0</strong></div>
@@ -81,7 +86,12 @@
           <div id="staff"></div>
         </aside>
       </div>
-      <section class="chronicle panel"><p class="eyebrow">Family chronicle</p><ol id="chronicle"></ol></section>
+      </div>
+      <section id="chronicle-view" class="chronicle panel" hidden aria-labelledby="chronicle-title">
+        <p class="eyebrow">The family record</p>
+        <h3 id="chronicle-title">Family chronicle</h3>
+        <div id="chronicle"></div>
+      </section>
     </section>
 
     <dialog id="ending"><div id="ending-content"></div><button class="primary" id="ending-restart">Begin another household</button></dialog>
@@ -91,6 +101,6 @@
     </dialog>
   </main>
   <script src="game.js?v=5"></script>
-  <script src="seasonal.js?v=4"></script>
+  <script src="seasonal.js?v=5"></script>
 </body>
 </html>

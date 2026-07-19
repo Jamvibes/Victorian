@@ -12,6 +12,69 @@
   background-image: none;
 }
 
+.game-tabs {
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: .35rem;
+  margin-top: 1.25rem;
+}
+
+.game-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  padding: .7rem 1rem;
+}
+
+.game-tab.is-active {
+  border-bottom-color: var(--red);
+  color: var(--ink);
+  font-weight: bold;
+}
+
+.chronicle {
+  margin-top: 1.5rem;
+}
+
+.chronicle h3 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: normal;
+  margin: 0 0 1.5rem;
+}
+
+.chronicle-entry {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(8rem, 11rem) 1fr;
+  padding: 1rem 0;
+}
+
+.chronicle-entry time {
+  color: var(--red);
+  font-size: .75rem;
+  font-weight: bold;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.chronicle-entry p,
+.season-story p {
+  line-height: 1.55;
+  margin: 0;
+}
+
+.season-story {
+  display: grid;
+  gap: .8rem;
+  margin: 1rem 0 1.5rem;
+}
+
+@media (max-width: 560px) {
+  .chronicle-entry { grid-template-columns: 1fr; gap: .35rem; }
+}
+
 .name-entry {
   align-items: stretch;
   display: flex;
