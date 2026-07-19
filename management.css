@@ -3,6 +3,17 @@
   display: none !important;
 }
 
+/* Use the compact JPEG on the published site; the earlier PNG upload was corrupt. */
+.welcome {
+  background-image: url('assets/hawthorn-house.jpg');
+}
+
+.correspondence {
+  background-image:
+    linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,.55)),
+    url('assets/hawthorn-house.jpg');
+}
+
 .investment-row {
   align-items: center;
   border-bottom: 1px dotted var(--line);
@@ -77,4 +88,3 @@
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-
