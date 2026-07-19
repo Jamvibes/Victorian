@@ -9,9 +9,7 @@
 }
 
 .correspondence {
-  background-image:
-    linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,.55)),
-    url('assets/hawthorn-house.jpg');
+  background-image: none;
 }
 
 .name-entry {

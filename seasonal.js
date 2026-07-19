@@ -1,6 +1,14 @@
 const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const correspondencePerSeason = 3;
 
+function personalizeCorrespondence(text) {
+  return text
+    .replaceAll('{partner}', state.partner)
+    .replace(/^Your Partner(?:'s|’s)?/, `${state.partner}'s`)
+    .replaceAll('Your partner', state.partner)
+    .replaceAll('your partner', state.partner);
+}
+
 function seasonalEventOrder() {
   const order = [];
   for (let season = 0; season < 4; season++) {
@@ -58,14 +66,15 @@ renderEvent = function () {
   const position = state.season * correspondencePerSeason + state.correspondence;
   const event = events[state.eventOrder[position] % events.length];
   $('#correspondence-progress').textContent = `- ${state.correspondence + 1} of ${correspondencePerSeason}`;
-  $('#event-title').textContent = event.title;
-  $('#event-body').textContent = event.body;
-  $('#event-choices').innerHTML = event.choices.map((choice, index) => `<button class="event-choice" data-choice="${index}"><strong>${choice.label}</strong><small>${choice.note}</small></button>`).join('');
+  $('#event-title').textContent = personalizeCorrespondence(event.title);
+  $('#event-body').textContent = personalizeCorrespondence(event.body);
+  $('#event-choices').innerHTML = event.choices.map((choice, index) => `<button class="event-choice" data-choice="${index}"><strong>${personalizeCorrespondence(choice.label)}</strong><small>${personalizeCorrespondence(choice.note)}</small></button>`).join('');
   document.querySelectorAll('[data-choice]').forEach(button => button.onclick = () => resolveEvent(event, +button.dataset.choice));
 };
 
 resolveEvent = function (event, index) {
   const choice = event.choices[index];
+  const personalizedResult = personalizeCorrespondence(choice.result);
   if (!state.seasonStart) {
     state.seasonStart = {
       funds: state.funds, reputation: state.reputation,
@@ -73,8 +82,8 @@ resolveEvent = function (event, index) {
     };
   }
   Object.entries(choice.effects).forEach(([key, value]) => state[key] = (state[key] || 0) + value);
-  state.history.unshift(choice.result);
-  state.seasonResults.push(choice.result);
+  state.history.unshift(personalizedResult);
+  state.seasonResults.push(personalizedResult);
   clamp();
 
   if (state.correspondence < correspondencePerSeason - 1) {
@@ -115,6 +124,9 @@ resolveEvent = function (event, index) {
   if (!finishAfterSummary) saveState();
   showSeasonSummary(completedSeason, results, before, { seasonalIncome, staffWages, upkeep, investmentNotes });
 };
+
+// Investment opportunities are offered through correspondence, never a standing sidebar menu.
+renderInvestments = function () {};
 
 settleHoldings = function () {
   const notes = [];
