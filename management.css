@@ -1,0 +1,37 @@
+Exit code: 0
+Wall time: 0.9 seconds
+Output:
+.investment-row {
+  align-items: center;
+  border-bottom: 1px dotted var(--line);
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  padding: .5rem 0;
+}
+
+.investment-row button {
+  background: none;
+  border: 0;
+  color: var(--red);
+  text-decoration: underline;
+}
+
+.investment-row button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.management-note {
+  color: var(--muted);
+  display: block;
+  font-size: .75rem;
+  margin: .2rem 0;
+}
+
+.holding {
+  border-left: 2px solid var(--gold);
+  padding-left: .6rem;
+}
+
