@@ -1,5 +1,6 @@
 const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
-const correspondencePerSeason = 3;
+// Change any one of these values to give that season more or fewer letters.
+const correspondenceCounts = [3, 3, 3, 3];
 
 function personalizeCorrespondence(text) {
   return text
@@ -9,12 +10,20 @@ function personalizeCorrespondence(text) {
     .replaceAll('your partner', state.partner);
 }
 
-function seasonalEventOrder() {
-  const order = [];
-  for (let season = 0; season < 4; season++) {
-    order.push(...shuffle([...Array(events.length).keys()]).slice(0, correspondencePerSeason));
+function correspondenceQueue(count) {
+  const queue = [];
+  while (queue.length < count) {
+    const batch = shuffle([...Array(events.length).keys()]);
+    if (queue.length && batch.length > 1 && queue.at(-1) === batch[0]) {
+      [batch[0], batch[1]] = [batch[1], batch[0]];
+    }
+    queue.push(...batch.slice(0, count - queue.length));
   }
-  return order;
+  return queue;
+}
+
+function seasonalCorrespondencePlan() {
+  return correspondenceCounts.map(count => correspondenceQueue(count));
 }
 
 function migrateSeasonalState() {
@@ -27,7 +36,11 @@ function migrateSeasonalState() {
   state.correspondence ||= 0;
   state.seasonResults ||= [];
   state.holdings ||= [];
-  if (!state.eventOrder || state.eventOrder.length < 12) state.eventOrder = seasonalEventOrder();
+  state.correspondencePlan ||= seasonalCorrespondencePlan();
+  correspondenceCounts.forEach((count, season) => {
+    const queue = state.correspondencePlan[season] ||= [];
+    if (queue.length < count) queue.push(...correspondenceQueue(count - queue.length));
+  });
   state.month = state.season * 3;
 }
 
@@ -41,7 +54,7 @@ newHousehold = function (data) {
     reputation: o.reputation + m.reputation, harmony: o.harmony + m.harmony,
     loyalty: 55, investment: 0, holdings: [], staff: [...staffRoles],
     history: [`${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`],
-    eventOrder: seasonalEventOrder()
+    correspondencePlan: seasonalCorrespondencePlan()
   };
   saveState();
   show('game');
@@ -63,9 +76,9 @@ renderGame = function () {
 };
 
 renderEvent = function () {
-  const position = state.season * correspondencePerSeason + state.correspondence;
-  const event = events[state.eventOrder[position] % events.length];
-  $('#correspondence-progress').textContent = `- ${state.correspondence + 1} of ${correspondencePerSeason}`;
+  const seasonQueue = state.correspondencePlan[state.season];
+  const event = events[seasonQueue[state.correspondence] % events.length];
+  $('#correspondence-progress').textContent = `- ${state.correspondence + 1} of ${seasonQueue.length}`;
   $('#event-title').textContent = personalizeCorrespondence(event.title);
   $('#event-body').textContent = personalizeCorrespondence(event.body);
   $('#event-choices').innerHTML = event.choices.map((choice, index) => `<button class="event-choice" data-choice="${index}"><strong>${personalizeCorrespondence(choice.label)}</strong><small>${personalizeCorrespondence(choice.note)}</small></button>`).join('');
@@ -86,7 +99,7 @@ resolveEvent = function (event, index) {
   state.seasonResults.push(personalizedResult);
   clamp();
 
-  if (state.correspondence < correspondencePerSeason - 1) {
+  if (state.correspondence < state.correspondencePlan[state.season].length - 1) {
     state.correspondence++;
     saveState();
     renderGame();
