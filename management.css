@@ -12,6 +12,10 @@
   background-image: none;
 }
 
+.ledger {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .game-tabs {
   border-bottom: 1px solid var(--line);
   display: flex;
@@ -161,7 +165,7 @@
 .summary-changes {
   display: grid;
   gap: .5rem;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   margin: 1rem 0;
 }
 
@@ -176,5 +180,64 @@
   display: block;
   font-size: .7rem;
   letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.staff-vacancy,
+.staff-member {
+  border-top: 1px solid var(--line);
+  padding: .8rem 0;
+}
+
+.staff-member__heading {
+  align-items: start;
+  display: flex;
+  gap: .7rem;
+  justify-content: space-between;
+}
+
+.staff-member__heading small,
+.staff-candidate small {
+  color: var(--muted);
+  display: block;
+  margin-top: .15rem;
+}
+
+.staff-member__heading button,
+.staff-candidate button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--red);
+  font-size: .68rem;
+  padding: .35rem .5rem;
+}
+
+.staff-applicants {
+  display: grid;
+  gap: .6rem;
+  margin-top: .7rem;
+}
+
+.staff-candidate {
+  background: rgba(255,255,255,.3);
+  border-left: 3px solid var(--gold);
+  padding: .7rem;
+}
+
+.staff-candidate p,
+.staff-member p {
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.4;
+  margin: .35rem 0 .6rem;
+}
+
+.staff-trait {
+  color: var(--red);
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: bold;
+  letter-spacing: .08em;
+  margin-top: .4rem;
   text-transform: uppercase;
 }
