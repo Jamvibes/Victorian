@@ -1,6 +1,7 @@
 const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
 // Change any one of these values to give that season more or fewer letters.
 const correspondenceCounts = [3, 3, 3, 3];
+let openStaffRole = null;
 
 function recordChronicle(text) {
   state.chronicleOrder = (state.chronicleOrder || 0) + 1;
@@ -43,20 +44,31 @@ function personalizeCorrespondence(text) {
     .replaceAll('your partner', state.partner);
 }
 
+function eventWeight(event) {
+  return Math.max(.1, state.staff.reduce((weight, servant) => weight * (servant.eventWeights?.[event.id] || 1), 1));
+}
+
+function weightedEventIndex(excluded = []) {
+  const choices = events.map((event, index) => ({ index, weight: excluded.includes(index) ? 0 : eventWeight(event) }));
+  let roll = Math.random() * choices.reduce((total, choice) => total + choice.weight, 0);
+  for (const choice of choices) {
+    roll -= choice.weight;
+    if (roll <= 0 && choice.weight) return choice.index;
+  }
+  return choices.find(choice => choice.weight)?.index || 0;
+}
+
 function correspondenceQueue(count) {
   const queue = [];
   while (queue.length < count) {
-    const batch = shuffle([...Array(events.length).keys()]);
-    if (queue.length && batch.length > 1 && queue.at(-1) === batch[0]) {
-      [batch[0], batch[1]] = [batch[1], batch[0]];
-    }
-    queue.push(...batch.slice(0, count - queue.length));
+    const used = queue.length < events.length ? queue : [];
+    queue.push(weightedEventIndex(used));
   }
   return queue;
 }
 
 function seasonalCorrespondencePlan() {
-  return correspondenceCounts.map(count => correspondenceQueue(count));
+  return [correspondenceQueue(correspondenceCounts[0]), null, null, null];
 }
 
 function migrateSeasonalState() {
@@ -69,9 +81,19 @@ function migrateSeasonalState() {
   state.correspondence ||= 0;
   state.seasonResults ||= [];
   state.holdings ||= [];
+  state.staff ||= [];
+  state.staff = state.staff.map(servant => {
+    if (servant.name) return servant;
+    return { ...servant, id: `incumbent-${servant.role.toLowerCase().replaceAll(' ', '-')}`, name: `Established ${servant.role}`, trait: 'Experienced', description: 'An experienced servant retained from the household’s earlier arrangements.', eventWeights: {} };
+  });
   state.correspondencePlan ||= seasonalCorrespondencePlan();
+  if (!state.staffSystemVersion) {
+    state.correspondencePlan = state.correspondencePlan.map((queue, season) => season > state.season ? null : queue);
+    state.staffSystemVersion = 1;
+  }
   correspondenceCounts.forEach((count, season) => {
-    const queue = state.correspondencePlan[season] ||= [];
+    if (season !== state.season && !state.correspondencePlan[season]) return;
+    const queue = state.correspondencePlan[season] ||= correspondenceQueue(count);
     if (queue.length < count) queue.push(...correspondenceQueue(count - queue.length));
   });
   state.month = state.season * 3;
@@ -85,7 +107,7 @@ newHousehold = function (data) {
     seasonResults: [], seasonStart: null, month: 0,
     funds: o.funds + m.funds, income: o.income,
     reputation: o.reputation + m.reputation, harmony: o.harmony + m.harmony,
-    loyalty: 55, investment: 0, holdings: [], staff: [...staffRoles],
+    investment: 0, holdings: [], staff: [],
     history: [{ text: `${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`, season: 0, year: 1880, order: 1 }],
     chronicleOrder: 1,
     correspondencePlan: seasonalCorrespondencePlan()
@@ -101,13 +123,22 @@ renderGame = function () {
   $('#date').textContent = `${seasonNames[state.season]} 1880`;
   $('#house-name').textContent = `${state.family} House`;
   ['funds', 'income'].forEach(key => $('#' + key).textContent = money(state[key]));
-  ['reputation', 'harmony', 'loyalty'].forEach(key => $('#' + key).textContent = Math.round(state[key]));
+  ['reputation', 'harmony'].forEach(key => $('#' + key).textContent = Math.round(state[key]));
   const seasonalIncome = state.income / 4;
   const staffCost = state.staff.reduce((total, servant) => total + servant.wage, 0) * 3;
   $('#accounts').innerHTML = `<div class="account"><span>Seasonal income</span><strong>${money(seasonalIncome)}</strong></div><div class="account"><span>Staff wages</span><strong>-${money(staffCost)}</strong></div><div class="account"><span>Household upkeep</span><strong>-${money(195)}</strong></div>`;
   renderStaff();
   renderInvestments();
   renderEvent();
+};
+
+renderStaff = function () {
+  $('#staff').innerHTML = Object.keys(staffCandidates).map(role => {
+    const employed = state.staff.find(servant => servant.role === role);
+    if (employed) return `<article class="staff-member"><div class="staff-member__heading"><div><strong>${employed.name}</strong><small>${role} · ${money(employed.wage)}/month</small></div><button data-staff-dismiss="${role}">Dismiss</button></div><span class="staff-trait">${employed.trait}</span><p>${employed.description}</p></article>`;
+    const applicants = openStaffRole === role ? `<div class="staff-applicants">${staffCandidates[role].map(candidate => `<article class="staff-candidate"><div><strong>${candidate.name}</strong><small>${money(candidate.wage)}/month</small></div><span class="staff-trait">${candidate.trait}</span><p>${candidate.description}</p><button data-candidate-role="${role}" data-candidate-id="${candidate.id}" ${state.funds < candidate.wage * 3 ? 'disabled' : ''}>Employ</button></article>`).join('')}</div>` : '';
+    return `<section class="staff-vacancy"><div class="staff-member__heading"><div><strong>${role}</strong><small>Position vacant</small></div><button data-review-role="${role}">${openStaffRole === role ? 'Close' : 'Review applicants'}</button></div>${applicants}</section>`;
+  }).join('');
 };
 
 renderEvent = function () {
@@ -126,7 +157,7 @@ resolveEvent = function (event, index) {
   if (!state.seasonStart) {
     state.seasonStart = {
       funds: state.funds, reputation: state.reputation,
-      harmony: state.harmony, loyalty: state.loyalty
+      harmony: state.harmony
     };
   }
   Object.entries(choice.effects).forEach(([key, value]) => state[key] = (state[key] || 0) + value);
@@ -167,6 +198,9 @@ resolveEvent = function (event, index) {
   state.correspondence = 0;
   state.seasonResults = [];
   state.seasonStart = null;
+  if (state.season < 4 && !state.correspondencePlan[state.season]) {
+    state.correspondencePlan[state.season] = correspondenceQueue(correspondenceCounts[state.season]);
+  }
   clamp();
   finishAfterSummary = state.season >= 4 || state.funds < -500 || state.reputation <= 0;
   if (!finishAfterSummary) saveState();
@@ -201,13 +235,13 @@ function showSeasonSummary(season, results, before, account) {
   const investmentText = account.investmentNotes.length
     ? `<ul>${account.investmentNotes.map(note => `<li>${note}</li>`).join('')}</ul>`
     : '<p>No investment matured this season. Existing holdings remain exposed to future gain or loss.</p>';
-  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff wages</span><strong>-${money(account.staffWages)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Family accord</span><strong>${signed(state.harmony - before.harmony)}</strong></div><div><span>Staff confidence</span><strong>${signed(state.loyalty - before.loyalty)}</strong></div></div>`;
+  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff wages</span><strong>-${money(account.staffWages)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Family accord</span><strong>${signed(state.harmony - before.harmony)}</strong></div></div>`;
   $('#continue-month').textContent = finishAfterSummary ? 'Read the family legacy' : 'Continue to the next season';
   $('#month-summary').showModal();
 }
 
 finish = function () {
-  const virtues = [['fortune', state.funds], ['standing', state.reputation * 80], ['domestic happiness', state.harmony * 75], ['a loyal household', state.loyalty * 65]].sort((a, b) => b[1] - a[1]);
+  const virtues = [['fortune', state.funds], ['standing', state.reputation * 80], ['domestic happiness', state.harmony * 75]].sort((a, b) => b[1] - a[1]);
   $('#ending-content').innerHTML = `<p class="eyebrow">The close of 1880</p><h2>The ${state.family} Legacy</h2><p>No single account can settle whether a life was well lived. The year leaves the ${state.family} family best known for <strong>${virtues[0][0]}</strong>, while ${virtues.at(-1)[0]} remains less certain.</p><p>Funds: ${money(state.funds)} - Reputation: ${state.reputation} - Family accord: ${state.harmony}</p>`;
   $('#ending').showModal();
   localStorage.removeItem('victorian-household');
@@ -221,3 +255,34 @@ renderHistory = function () {
 
 $('#household-tab').onclick = () => showGameTab('household');
 $('#chronicle-tab').onclick = () => showGameTab('chronicle');
+
+document.addEventListener('click', event => {
+  const reviewRole = event.target.dataset.reviewRole;
+  if (reviewRole) {
+    openStaffRole = openStaffRole === reviewRole ? null : reviewRole;
+    renderStaff();
+    return;
+  }
+  const candidateRole = event.target.dataset.candidateRole;
+  if (candidateRole) {
+    const candidate = staffCandidates[candidateRole].find(person => person.id === event.target.dataset.candidateId);
+    if (candidate && !state.staff.some(servant => servant.role === candidateRole)) {
+      state.staff.push({ ...candidate, eventWeights: { ...candidate.eventWeights } });
+      openStaffRole = null;
+      recordChronicle(`${candidate.name} entered the household as ${candidateRole.toLowerCase()}.`);
+      saveState();
+      renderGame();
+    }
+    return;
+  }
+  const dismissRole = event.target.dataset.staffDismiss;
+  if (dismissRole) {
+    const index = state.staff.findIndex(servant => servant.role === dismissRole);
+    if (index >= 0) {
+      const [servant] = state.staff.splice(index, 1);
+      recordChronicle(`${servant.name} left the household’s service.`);
+      saveState();
+      renderGame();
+    }
+  }
+});

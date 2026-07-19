@@ -15,6 +15,33 @@ const matches=[
 const staffRoles=[
  {role:'Housekeeper',wage:8,benefit:3},{role:'Cook',wage:7,benefit:2},{role:'Parlour maid',wage:4,benefit:2},{role:'Footman',wage:5,benefit:3},{role:'Governess',wage:6,benefit:2}
 ];
+const staffCandidates={
+ 'Housekeeper':[
+  {id:'doyle',name:'Mrs Beatrice Doyle',role:'Housekeeper',wage:11,trait:'Firm but fair',description:'Her orderly management makes disputes below stairs less likely.',eventWeights:{staff_dispute:.45}},
+  {id:'finch',name:'Mrs Eliza Finch',role:'Housekeeper',wage:8,trait:'Economical',description:'Her economies save wages, but servants are more likely to complain.',eventWeights:{staff_dispute:1.55}},
+  {id:'vale',name:'Mrs Constance Vale',role:'Housekeeper',wage:13,trait:'Discreet',description:'She contains private scandals before they reach the wider household.',eventWeights:{partner_debt:.55}}
+ ],
+ 'Cook':[
+  {id:'bates',name:'Mrs Martha Bates',role:'Cook',wage:9,trait:'Meticulous',description:'Her exacting cleanliness makes illness at the estate less likely.',eventWeights:{village_fever:.65}},
+  {id:'pritchard',name:'Mrs Anne Pritchard',role:'Cook',wage:6,trait:'Temperamental',description:'Affordable and talented, though quarrels below stairs become more likely.',eventWeights:{staff_dispute:1.6}},
+  {id:'webb',name:'Mrs Clara Webb',role:'Cook',wage:11,trait:'Generous',description:'Her kitchen supports local families, bringing village concerns to your door.',eventWeights:{village_fever:1.35}}
+ ],
+ 'Parlour maid':[
+  {id:'reed',name:'Miss Alice Reed',role:'Parlour maid',wage:5,trait:'Observant',description:'She notices grievances early, making a staff crisis less likely.',eventWeights:{staff_dispute:.7}},
+  {id:'moss',name:'Miss Jane Moss',role:'Parlour maid',wage:3,trait:'Fond of gossip',description:'Private family matters are more likely to become household business.',eventWeights:{partner_debt:1.45}},
+  {id:'ellis',name:'Miss Florence Ellis',role:'Parlour maid',wage:6,trait:'Impeccable',description:'Her polished service makes society invitations more likely.',eventWeights:{society:1.3}}
+ ],
+ 'Footman':[
+  {id:'mercer',name:'Mr Thomas Mercer',role:'Footman',wage:7,trait:'Well connected',description:'His acquaintances among other houses make society invitations more likely.',eventWeights:{society:1.65}},
+  {id:'cole',name:'Mr Samuel Cole',role:'Footman',wage:4,trait:'Unpolished',description:'His manner discourages the most exacting social callers.',eventWeights:{society:.55}},
+  {id:'ward',name:'Mr Edward Ward',role:'Footman',wage:6,trait:'Former railway porter',description:'His enthusiasm brings railway opportunities to the household.',eventWeights:{railway:1.55}}
+ ],
+ 'Governess':[
+  {id:'gray',name:'Miss Edith Gray',role:'Governess',wage:8,trait:'Prudent',description:'Her caution makes speculative proposals less likely to be entertained.',eventWeights:{railway:.55}},
+  {id:'bell',name:'Miss Agnes Bell',role:'Governess',wage:6,trait:'Socially ambitious',description:'Her cultivated acquaintances increase society invitations.',eventWeights:{society:1.4}},
+  {id:'price',name:'Miss Louisa Price',role:'Governess',wage:5,trait:'Compassionate',description:'Her charitable interests make village appeals more likely.',eventWeights:{village_fever:1.45}}
+ ]
+};
 const investmentTypes=[
  {id:'consols',name:'Government consols',stake:250,risk:.08,upside:.12,downside:.05,reputation:1},
  {id:'railway',name:'Railway shares',stake:400,risk:.34,upside:.42,downside:.38,reputation:0},
@@ -22,26 +49,26 @@ const investmentTypes=[
  {id:'venture',name:'A commercial venture',stake:500,risk:.43,upside:.58,downside:.52,reputation:-1}
 ];
 const events=[
- {title:'An Invitation from Lady Ashcombe',body:'An invitation arrives for dinner at Ashcombe Hall. Your present evening clothes will be noticed, though declining the first invitation may be noticed more.',choices:[
+ {id:'society',title:'An Invitation from Lady Ashcombe',body:'An invitation arrives for dinner at Ashcombe Hall. Your present evening clothes will be noticed, though declining the first invitation may be noticed more.',choices:[
   {label:'Attend in suitable new clothes',note:'£95 · reputation likely to rise',effects:{funds:-95,reputation:9,harmony:2},result:'The evening passes handsomely, and your name appears in several promising conversations.'},
   {label:'Attend without extravagance',note:'A social risk',effects:{reputation:2,harmony:-1},result:'You are received politely. One or two glances linger longer than courtesy requires.'},
   {label:'Send regrets',note:'Preserve funds · lose an opening',effects:{reputation:-5,harmony:2},result:'The household enjoys a quiet evening, while Ashcombe Hall proceeds without you.'}]},
- {title:'The Northern Railway Prospectus',body:'Your banker offers shares in a new northern line. The engineers are confident; the newspapers are divided.',choices:[
+ {id:'railway',title:'The Northern Railway Prospectus',body:'Your banker offers shares in a new northern line. The engineers are confident; the newspapers are divided.',choices:[
   {label:'Subscribe £500',note:'Risk capital for an uncertain return',effects:{funds:-500,investment:500},result:'The certificates are placed in the strongbox. Their value will be known in time.'},
   {label:'Purchase £200 in shares',note:'A measured exposure',effects:{funds:-200,investment:200},result:'A modest parcel of shares joins the family papers.'},
   {label:'Decline the speculation',note:'No risk, no return',effects:{reputation:-1},result:'Your banker inclines his head, revealing neither approval nor disappointment.'}]},
- {title:'A Complaint Below Stairs',body:'The housekeeper reports that long hours and economies in the kitchen have provoked talk of resignations.',choices:[
-  {label:'Increase every servant’s allowance',note:'£60 · restore confidence',effects:{funds:-60,loyalty:14,reputation:1},result:'The gesture is discussed warmly below stairs, though the account book feels it at once.'},
-  {label:'Hear the staff individually',note:'Time and patience',effects:{harmony:3,loyalty:7},result:'Grievances are aired. Not all are solved, but the household feels heard.'},
-  {label:'Insist upon discipline',note:'Save money · risk resentment',effects:{loyalty:-13,reputation:-2},result:'Order returns quickly. Goodwill does not.'}]},
- {title:'Your Partner’s Confidence',body:'Your partner has quietly supported a struggling relation and now asks the household to cover a debt of £140.',choices:[
+ {id:'staff_dispute',title:'A Complaint Below Stairs',body:'The housekeeper reports that long hours and economies in the kitchen have provoked talk of resignations.',choices:[
+  {label:'Increase every servant’s allowance',note:'£60 · preserve the household’s good name',effects:{funds:-60,reputation:2},result:'The gesture is discussed warmly below stairs, though the account book feels it at once.'},
+  {label:'Hear the staff individually',note:'Time and patience',effects:{harmony:3},result:'Grievances are aired. Not all are solved, but the household feels heard.'},
+  {label:'Insist upon discipline',note:'Save money · risk public complaint',effects:{reputation:-3},result:'Order returns quickly. Goodwill does not.'}]},
+ {id:'partner_debt',title:'Your Partner’s Confidence',body:'Your partner has quietly supported a struggling relation and now asks the household to cover a debt of £140.',choices:[
   {label:'Settle the debt without reproach',note:'£140 · strengthen the marriage',effects:{funds:-140,harmony:13},result:'Relief gives way to gratitude; the matter remains entirely private.'},
   {label:'Pay half, with conditions',note:'£70 · a compromise',effects:{funds:-70,harmony:3},result:'A solution is reached, though neither of you calls it generous.'},
   {label:'Refuse the request',note:'Protect the estate',effects:{harmony:-12,reputation:-3},result:'The estate is protected. The silence at dinner is considerable.'}]},
- {title:'A Fever in the Village',body:'Illness has reached several cottages. The vicar asks you to fund a temporary nurse and clean water carts.',choices:[
+ {id:'village_fever',title:'A Fever in the Village',body:'Illness has reached several cottages. The vicar asks you to fund a temporary nurse and clean water carts.',choices:[
   {label:'Meet the full expense',note:'£110 · duty publicly fulfilled',effects:{funds:-110,reputation:11,harmony:3},result:'The measures are effective, and gratitude spreads further than the fever.'},
   {label:'Contribute £40 discreetly',note:'A limited but sincere response',effects:{funds:-40,reputation:4},result:'The vicar thanks you. The need, however, remains greater than the provision.'},
-  {label:'The parish must bear its duties',note:'No expense',effects:{reputation:-10,loyalty:-3},result:'The decision is lawful and much discussed.'}]}
+  {label:'The parish must bear its duties',note:'No expense',effects:{reputation:-10},result:'The decision is lawful and much discussed.'}]}
 ];
 let state=null;
 let finishAfterSummary=false;
