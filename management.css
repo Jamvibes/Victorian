@@ -58,6 +58,14 @@
 
 .finance-entry li + li { border-top: 1px solid rgba(185,170,139,.5); }
 
+.finance-total {
+  align-items: center;
+  border-bottom: 1px dotted var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding: .65rem 0;
+}
+
 .family {
   margin-top: 1.5rem;
 }

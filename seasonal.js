@@ -115,9 +115,11 @@ function migrateSeasonalState() {
   state.seasonResults ||= [];
   state.holdings ||= [];
   if (!state.relationships) state.relationships = { partner: Number.isFinite(state.harmony) ? state.harmony : 50 };
-  if (!state.estateIncomeModelVersion) {
-    state.income = 1000;
-    state.estateIncomeModelVersion = 1;
+  if (state.estateIncomeModelVersion !== 2) {
+    const incomeOrigin = origins.find(item => item.id === state.origin) || origins[0];
+    state.income = incomeOrigin.income;
+    state.incomeSources = incomeOrigin.incomeSources.map(source => ({ ...source }));
+    state.estateIncomeModelVersion = 2;
   }
   if (state.seasonStart && state.seasonStart.partnerRelationship === undefined) {
     state.seasonStart.partnerRelationship = Number.isFinite(state.seasonStart.harmony) ? state.seasonStart.harmony : state.relationships.partner;
@@ -146,7 +148,7 @@ newHousehold = function (data) {
     given: data.get('givenName'), family: data.get('familyName'), partner: data.get('partnerName'),
     origin: o.id, match: m.id, season: 0, correspondence: 0,
     seasonResults: [], seasonStart: null, month: 0,
-    funds: o.funds + m.funds, income: o.income,
+    funds: o.funds + m.funds, income: o.income, incomeSources: o.incomeSources.map(source => ({ ...source })), estateIncomeModelVersion: 2,
     reputation: o.reputation + m.reputation, relationships: { partner: o.partnerRelationship + m.partnerRelationship },
     investment: 0, holdings: [], staff: [],
     history: [{ text: `${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`, season: 0, year: 1880, order: 1 }],
@@ -169,7 +171,8 @@ renderGame = function () {
   const seasonalIncome = state.income / 4;
   const staffCost = state.staff.reduce((total, servant) => total + servant.wage, 0) * 3;
   const wageItems = state.staff.length ? state.staff.map(servant => `<li><span>${servant.name}</span><strong>-${money(servant.wage * 3)}</strong></li>`).join('') : '<li><span>No staff currently employed</span><strong>£0</strong></li>';
-  $('#accounts').innerHTML = `<details class="finance-entry"><summary><span>Estate income</span><strong>${money(seasonalIncome)}</strong></summary><ul><li><span>Annual profit from the estate ÷ four seasons</span><strong>${money(state.income)} annually</strong></li></ul></details><details class="finance-entry"><summary><span>Staff costs</span><strong>-${money(staffCost)}</strong></summary><ul>${wageItems}</ul></details><details class="finance-entry"><summary><span>Household upkeep</span><strong>-${money(195)}</strong></summary><ul><li><span>Food and household provisions</span><strong>-${money(90)}</strong></li><li><span>Repairs and maintenance</span><strong>-${money(65)}</strong></li><li><span>Coal, candles and household supplies</span><strong>-${money(40)}</strong></li></ul></details>`;
+  const incomeItems = state.incomeSources.map(source => `<li><span>${source.name}</span><strong>${money(source.annual / 4)}</strong></li>`).join('');
+  $('#accounts').innerHTML = `<details class="finance-entry"><summary><span>Household income</span><strong>${money(seasonalIncome)}</strong></summary><ul>${incomeItems}</ul></details><details class="finance-entry"><summary><span>Staff costs</span><strong>-${money(staffCost)}</strong></summary><ul>${wageItems}</ul></details><div class="finance-total"><span>Household upkeep</span><strong>-${money(195)}</strong></div>`;
   renderStaff();
   renderInvestments();
   renderEvent();
@@ -281,7 +284,7 @@ function showSeasonSummary(season, results, before, account) {
   const investmentText = account.investmentNotes.length
     ? `<ul>${account.investmentNotes.map(note => `<li>${note}</li>`).join('')}</ul>`
     : '<p>No investment matured this season. Existing holdings remain exposed to future gain or loss.</p>';
-  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Estate income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff costs</span><strong>-${money(account.staffCosts)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Relationship with ${state.partner}</span><strong>${signed(partnerRelationship() - before.partnerRelationship)}</strong></div></div>`;
+  $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff costs</span><strong>-${money(account.staffCosts)}</strong></div><div><span>Household upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Relationship with ${state.partner}</span><strong>${signed(partnerRelationship() - before.partnerRelationship)}</strong></div></div>`;
   $('#continue-month').textContent = finishAfterSummary ? 'Read the family legacy' : 'Continue to the next season';
   $('#month-summary').showModal();
 }

@@ -1,7 +1,7 @@
 const origins=[
- {id:'gentry',name:'The landed gentry',desc:'A respected name and a modest estate burdened by expectation.',funds:6200,income:1000,reputation:64,partnerRelationship:55,difficulty:'Comfortable'},
- {id:'trade',name:'A mercantile fortune',desc:'New money, abundant capital, and doors that do not always open.',funds:9800,income:1000,reputation:39,partnerRelationship:58,difficulty:'Prosperous'},
- {id:'clergy',name:'The rector’s family',desc:'Education and good character, but little inheritance.',funds:3400,income:1000,reputation:54,partnerRelationship:66,difficulty:'Demanding'}
+ {id:'gentry',name:'The landed gentry',desc:'A respected name and a modest estate burdened by expectation.',funds:6200,income:1000,incomeSources:[{name:'Profit from the estate',annual:1000}],reputation:64,partnerRelationship:55,difficulty:'Comfortable'},
+ {id:'trade',name:'A mercantile fortune',desc:'New money, abundant capital, and doors that do not always open.',funds:9800,income:1400,incomeSources:[{name:'Profit from the estate',annual:1000},{name:'Mercantile business',annual:400}],reputation:39,partnerRelationship:58,difficulty:'Prosperous'},
+ {id:'clergy',name:'The rector’s family',desc:'Education and good character, but little inheritance.',funds:3400,income:1000,incomeSources:[{name:'Profit from the estate',annual:1000}],reputation:54,partnerRelationship:66,difficulty:'Demanding'}
 ];
 const maleVictorianNames=['Albert','Alfred','Arthur','Cecil','Charles','Edmund','Edward','Ernest','Frederick','George','Henry','Hugh','James','Laurence','Oliver','Percival','Samuel','Theodore','Thomas','Walter','William'];
 const femaleVictorianNames=['Ada','Adelaide','Agnes','Alice','Beatrice','Clara','Edith','Eleanor','Eliza','Florence','Georgiana','Harriet','Josephine','Louisa','Mabel','Margaret','Matilda','Rose','Victoria'];
@@ -79,7 +79,7 @@ function renderCards(){
  $('#matches').innerHTML=matches.map((m,i)=>`<label class="choice"><input type="radio" name="match" value="${m.id}" ${i===0?'checked':''}><strong>${m.name}</strong><small>${m.desc}</small></label>`).join(''); updateProspect();
 }
 function selections(){const o=origins.find(x=>x.id===$('[name=origin]:checked').value),m=matches.find(x=>x.id===$('[name=match]:checked').value);return{o,m}}
-function updateProspect(){const {o,m}=selections();$('#prospect').innerHTML=`<span class="eyebrow">Your prospects</span><strong>Funds £${(o.funds+m.funds).toLocaleString()}</strong><strong>Estate income £${o.income.toLocaleString()}</strong><strong>Reputation ${o.reputation+m.reputation}</strong><strong>Partner relationship ${o.partnerRelationship+m.partnerRelationship}</strong><em>${o.difficulty}</em>`}
+function updateProspect(){const {o,m}=selections();$('#prospect').innerHTML=`<span class="eyebrow">Your prospects</span><strong>Funds £${(o.funds+m.funds).toLocaleString()}</strong><strong>Household income £${o.income.toLocaleString()}</strong><strong>Reputation ${o.reputation+m.reputation}</strong><strong>Partner relationship ${o.partnerRelationship+m.partnerRelationship}</strong><em>${o.difficulty}</em>`}
 function newHousehold(data){const {o,m}=selections();state={given:data.get('givenName'),family:data.get('familyName'),partner:data.get('partnerName'),origin:o.id,match:m.id,month:0,funds:o.funds+m.funds,income:o.income,reputation:o.reputation+m.reputation,harmony:o.harmony+m.harmony,loyalty:55,investment:0,holdings:[],staff:[...staffRoles],history:[`${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`],eventOrder:shuffle([...Array(events.length).keys()])};saveState();show('game');renderGame()}
 function shuffle(a){for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function money(v){return `${v<0?'−':''}£${Math.abs(Math.round(v)).toLocaleString()}`}
