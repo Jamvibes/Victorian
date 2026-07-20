@@ -3,7 +3,27 @@ const seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const correspondenceCounts = [3, 3, 3, 3];
 // Upkeep for the family's starting estate. Additional properties can add their own costs later.
 const baseSeasonalUpkeep = 125;
+// These shared boundaries should be used by all family-related events and conditions.
+const childAgeBoundaries = { youngMaximum: 8, adultMinimum: 18 };
 let openStaffRole = null;
+
+function childAgeGroup(age) {
+  if (age <= childAgeBoundaries.youngMaximum) return 'young';
+  if (age >= childAgeBoundaries.adultMinimum) return 'adult';
+  return 'older';
+}
+
+function childrenInAgeGroup(group) {
+  return (state.children || []).filter(child => childAgeGroup(child.age) === group);
+}
+
+function hasYoungChildren() {
+  return childrenInAgeGroup('young').length > 0;
+}
+
+function hasAdultChildren() {
+  return childrenInAgeGroup('adult').length > 0;
+}
 
 function recordChronicle(text) {
   state.chronicleOrder = (state.chronicleOrder || 0) + 1;

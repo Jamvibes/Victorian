@@ -16,9 +16,9 @@ const matches=[
 const familyCircumstances=[
  {id:'newly-married',name:'Newly married',desc:'The marriage is recent, and the question of children remains before you.',children:[]},
  {id:'growing-family',name:'A growing family',desc:'Three young children fill the nursery and schoolroom.',children:[
-  {age:12,gender:'male',name:'Arthur',trait:'Dutiful'},
-  {age:9,gender:'female',name:'Beatrice',trait:'Scholarly'},
-  {age:6,gender:'female',name:'Clara',trait:'Sociable'}
+  {age:8,gender:'male',name:'Arthur',trait:'Dutiful'},
+  {age:5,gender:'female',name:'Beatrice',trait:'Scholarly'},
+  {age:2,gender:'female',name:'Clara',trait:'Sociable'}
  ]},
  {id:'older-children',name:'Older children',desc:'Your children are approaching the decisions that will shape their adult lives.',children:[
   {age:19,gender:'female',name:'Beatrice',trait:'Accomplished'},
