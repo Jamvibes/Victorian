@@ -321,17 +321,6 @@ resolveEvent = function (event, index) {
   const investmentNotes = [];
   state.funds += seasonalIncome - staffCosts - upkeep;
 
-  if (state.investment && Math.random() < .45) {
-    const change = Math.round(state.investment * (Math.random() < .55 ? .35 : -.45));
-    const returned = state.investment + change;
-    const note = `The railway shares were sold for ${money(returned)}.`;
-    state.funds += returned;
-    recordChronicle(note);
-    investmentNotes.push(note);
-    state.investment = 0;
-  }
-  investmentNotes.push(...settleHoldings());
-
   const results = [...state.seasonResults];
   state.season++;
   state.month = state.season * 3;
@@ -350,31 +339,16 @@ resolveEvent = function (event, index) {
 // Investment opportunities are offered through correspondence, never a standing sidebar menu.
 renderInvestments = function () {};
 
-settleHoldings = function () {
-  const notes = [];
-  state.holdings ||= [];
-  state.holdings = state.holdings.filter(holding => {
-    const placedSeason = holding.season ?? Math.floor((holding.month || 0) / 3);
-    if (state.season - placedSeason < 1 || Math.random() > .45) return true;
-    const type = investmentTypes.find(item => item.id === holding.id);
-    const failed = Math.random() < type.risk;
-    const change = Math.round(holding.stake * (failed ? -type.downside : type.upside));
-    const returned = holding.stake + change;
-    const note = `${type.name} ${failed ? 'disappointed' : 'rewarded'} the family, returning ${money(returned)}.`;
-    state.funds += returned;
-    state.reputation += failed ? type.reputation - 1 : type.reputation;
-    recordChronicle(note);
-    notes.push(note);
-    return false;
-  });
-  return notes;
-};
+// Investments remain unresolved until a correspondence event explicitly settles them.
+settleHoldings = function () { return []; };
 
 function showSeasonSummary(season, results, before, account) {
   const net = state.funds - before.funds;
   const investmentText = account.investmentNotes.length
     ? `<ul>${account.investmentNotes.map(note => `<li>${note}</li>`).join('')}</ul>`
-    : '<p>No investment matured this season. Existing holdings remain exposed to future gain or loss.</p>';
+    : state.investment
+      ? '<p>The Northern Railway shares remain held. Their outcome will depend upon future correspondence.</p>'
+      : '<p>No investment is currently awaiting an outcome.</p>';
   $('#month-summary-content').innerHTML = `<p class="eyebrow">The household account</p><h2 id="month-summary-title">${seasonNames[season]} concluded</h2><h3>The story of the season</h3><div class="season-story">${results.map(result => `<p>${result}</p>`).join('')}</div><div class="month-account"><div><span>Household income</span><strong>${money(account.seasonalIncome)}</strong></div><div><span>Staff costs</span><strong>-${money(account.staffCosts)}</strong></div><div><span>Estate upkeep</span><strong>-${money(account.upkeep)}</strong></div><div class="total"><span>Overall change in ready funds</span><strong>${net >= 0 ? '+' : ''}${money(net)}</strong></div></div><h3>Investments</h3>${investmentText}<div class="summary-changes"><div><span>Reputation</span><strong>${signed(state.reputation - before.reputation)}</strong></div><div><span>Relationship with ${state.partner}</span><strong>${signed(partnerRelationship() - before.partnerRelationship)}</strong></div></div>`;
   $('#continue-month').textContent = finishAfterSummary ? 'Read the family legacy' : 'Continue to the next season';
   $('#month-summary').showModal();
