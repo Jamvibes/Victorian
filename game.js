@@ -1,16 +1,16 @@
 const origins=[
- {id:'gentry',name:'The landed gentry',desc:'A respected name and a modest estate burdened by expectation.',funds:6200,income:1750,reputation:64,harmony:55,difficulty:'Comfortable'},
- {id:'trade',name:'A mercantile fortune',desc:'New money, abundant capital, and doors that do not always open.',funds:9800,income:2300,reputation:39,harmony:58,difficulty:'Prosperous'},
- {id:'clergy',name:'The rector’s family',desc:'Education and good character, but little inheritance.',funds:3400,income:1250,reputation:54,harmony:66,difficulty:'Demanding'}
+ {id:'gentry',name:'The landed gentry',desc:'A respected name and a modest estate burdened by expectation.',funds:6200,income:1000,reputation:64,partnerRelationship:55,difficulty:'Comfortable'},
+ {id:'trade',name:'A mercantile fortune',desc:'New money, abundant capital, and doors that do not always open.',funds:9800,income:1000,reputation:39,partnerRelationship:58,difficulty:'Prosperous'},
+ {id:'clergy',name:'The rector’s family',desc:'Education and good character, but little inheritance.',funds:3400,income:1000,reputation:54,partnerRelationship:66,difficulty:'Demanding'}
 ];
 const maleVictorianNames=['Albert','Alfred','Arthur','Cecil','Charles','Edmund','Edward','Ernest','Frederick','George','Henry','Hugh','James','Laurence','Oliver','Percival','Samuel','Theodore','Thomas','Walter','William'];
 const femaleVictorianNames=['Ada','Adelaide','Agnes','Alice','Beatrice','Clara','Edith','Eleanor','Eliza','Florence','Georgiana','Harriet','Josephine','Louisa','Mabel','Margaret','Matilda','Rose','Victoria'];
 const victorianSurnames=['Ashcombe','Bellamy','Blackwood','Cavendish','Fairfax','Harcourt','Hawthorne','Kingsley','Langford','Marchmont','Pembroke','Pemberton','Redmayne','Sinclair','Somerville','Whitmore','Wycliffe'];
 function randomFrom(list){return list[Math.floor(Math.random()*list.length)]}
 const matches=[
- {id:'love',name:'A love match',desc:'Deep affection, privately made, with no advantageous settlement.',funds:300,harmony:22,reputation:-3},
- {id:'prudent',name:'A prudent understanding',desc:'Mutual esteem and a useful, if modest, settlement.',funds:1800,harmony:10,reputation:5},
- {id:'arranged',name:'A family arrangement',desc:'Considerable property joins the household; intimacy may follow.',funds:4000,harmony:-8,reputation:10}
+ {id:'love',name:'A love match',desc:'Deep affection, privately made, with no advantageous settlement.',funds:300,partnerRelationship:22,reputation:-3},
+ {id:'prudent',name:'A prudent understanding',desc:'Mutual esteem and a useful, if modest, settlement.',funds:1800,partnerRelationship:10,reputation:5},
+ {id:'arranged',name:'A family arrangement',desc:'Considerable property joins the household; intimacy may follow.',funds:4000,partnerRelationship:-8,reputation:10}
 ];
 const staffRoles=[
  {role:'Housekeeper',wage:8,benefit:3},{role:'Cook',wage:7,benefit:2},{role:'Parlour maid',wage:4,benefit:2},{role:'Footman',wage:5,benefit:3},{role:'Governess',wage:6,benefit:2}
@@ -50,23 +50,23 @@ const investmentTypes=[
 ];
 const events=[
  {id:'society',title:'An Invitation from Lady Ashcombe',body:'An invitation arrives for dinner at Ashcombe Hall. Your present evening clothes will be noticed, though declining the first invitation may be noticed more.',choices:[
-  {label:'Attend in suitable new clothes',note:'£95 · reputation likely to rise',effects:{funds:-95,reputation:9,harmony:2},result:'The evening passes handsomely, and your name appears in several promising conversations.'},
-  {label:'Attend without extravagance',note:'A social risk',effects:{reputation:2,harmony:-1},result:'You are received politely. One or two glances linger longer than courtesy requires.'},
-  {label:'Send regrets',note:'Preserve funds · lose an opening',effects:{reputation:-5,harmony:2},result:'The household enjoys a quiet evening, while Ashcombe Hall proceeds without you.'}]},
+  {label:'Attend in suitable new clothes',note:'£95 · reputation likely to rise',effects:{funds:-95,reputation:9,partnerRelationship:2},result:'The evening passes handsomely, and your name appears in several promising conversations.'},
+  {label:'Attend without extravagance',note:'A social risk',effects:{reputation:2,partnerRelationship:-1},result:'You are received politely. One or two glances linger longer than courtesy requires.'},
+  {label:'Send regrets',note:'Preserve funds · lose an opening',effects:{reputation:-5,partnerRelationship:2},result:'The household enjoys a quiet evening, while Ashcombe Hall proceeds without you.'}]},
  {id:'railway',title:'The Northern Railway Prospectus',body:'Your banker offers shares in a new northern line. The engineers are confident; the newspapers are divided.',choices:[
   {label:'Subscribe £500',note:'Risk capital for an uncertain return',effects:{funds:-500,investment:500},result:'The certificates are placed in the strongbox. Their value will be known in time.'},
   {label:'Purchase £200 in shares',note:'A measured exposure',effects:{funds:-200,investment:200},result:'A modest parcel of shares joins the family papers.'},
   {label:'Decline the speculation',note:'No risk, no return',effects:{reputation:-1},result:'Your banker inclines his head, revealing neither approval nor disappointment.'}]},
  {id:'staff_dispute',title:'A Complaint Below Stairs',body:'The housekeeper reports that long hours and economies in the kitchen have provoked talk of resignations.',choices:[
   {label:'Increase every servant’s allowance',note:'£60 · preserve the household’s good name',effects:{funds:-60,reputation:2},result:'The gesture is discussed warmly below stairs, though the account book feels it at once.'},
-  {label:'Hear the staff individually',note:'Time and patience',effects:{harmony:3},result:'Grievances are aired. Not all are solved, but the household feels heard.'},
+  {label:'Hear the staff individually',note:'Time and patience',effects:{partnerRelationship:3},result:'Grievances are aired. Not all are solved, but the household feels heard.'},
   {label:'Insist upon discipline',note:'Save money · risk public complaint',effects:{reputation:-3},result:'Order returns quickly. Goodwill does not.'}]},
  {id:'partner_debt',title:'Your Partner’s Confidence',body:'Your partner has quietly supported a struggling relation and now asks the household to cover a debt of £140.',choices:[
-  {label:'Settle the debt without reproach',note:'£140 · strengthen the marriage',effects:{funds:-140,harmony:13},result:'Relief gives way to gratitude; the matter remains entirely private.'},
-  {label:'Pay half, with conditions',note:'£70 · a compromise',effects:{funds:-70,harmony:3},result:'A solution is reached, though neither of you calls it generous.'},
-  {label:'Refuse the request',note:'Protect the estate',effects:{harmony:-12,reputation:-3},result:'The estate is protected. The silence at dinner is considerable.'}]},
+  {label:'Settle the debt without reproach',note:'£140 · strengthen the marriage',effects:{funds:-140,partnerRelationship:13},result:'Relief gives way to gratitude; the matter remains entirely private.'},
+  {label:'Pay half, with conditions',note:'£70 · a compromise',effects:{funds:-70,partnerRelationship:3},result:'A solution is reached, though neither of you calls it generous.'},
+  {label:'Refuse the request',note:'Protect the estate',effects:{partnerRelationship:-12,reputation:-3},result:'The estate is protected. The silence at dinner is considerable.'}]},
  {id:'village_fever',title:'A Fever in the Village',body:'Illness has reached several cottages. The vicar asks you to fund a temporary nurse and clean water carts.',choices:[
-  {label:'Meet the full expense',note:'£110 · duty publicly fulfilled',effects:{funds:-110,reputation:11,harmony:3},result:'The measures are effective, and gratitude spreads further than the fever.'},
+  {label:'Meet the full expense',note:'£110 · duty publicly fulfilled',effects:{funds:-110,reputation:11,partnerRelationship:3},result:'The measures are effective, and gratitude spreads further than the fever.'},
   {label:'Contribute £40 discreetly',note:'A limited but sincere response',effects:{funds:-40,reputation:4},result:'The vicar thanks you. The need, however, remains greater than the provision.'},
   {label:'The parish must bear its duties',note:'No expense',effects:{reputation:-10},result:'The decision is lawful and much discussed.'}]}
 ];
@@ -79,7 +79,7 @@ function renderCards(){
  $('#matches').innerHTML=matches.map((m,i)=>`<label class="choice"><input type="radio" name="match" value="${m.id}" ${i===0?'checked':''}><strong>${m.name}</strong><small>${m.desc}</small></label>`).join(''); updateProspect();
 }
 function selections(){const o=origins.find(x=>x.id===$('[name=origin]:checked').value),m=matches.find(x=>x.id===$('[name=match]:checked').value);return{o,m}}
-function updateProspect(){const {o,m}=selections();$('#prospect').innerHTML=`<span class="eyebrow">Your prospects</span><strong>Funds £${(o.funds+m.funds).toLocaleString()}</strong><strong>Income £${o.income.toLocaleString()}</strong><strong>Reputation ${o.reputation+m.reputation}</strong><strong>Partner relationship ${o.harmony+m.harmony}</strong><em>${o.difficulty}</em>`}
+function updateProspect(){const {o,m}=selections();$('#prospect').innerHTML=`<span class="eyebrow">Your prospects</span><strong>Funds £${(o.funds+m.funds).toLocaleString()}</strong><strong>Estate income £${o.income.toLocaleString()}</strong><strong>Reputation ${o.reputation+m.reputation}</strong><strong>Partner relationship ${o.partnerRelationship+m.partnerRelationship}</strong><em>${o.difficulty}</em>`}
 function newHousehold(data){const {o,m}=selections();state={given:data.get('givenName'),family:data.get('familyName'),partner:data.get('partnerName'),origin:o.id,match:m.id,month:0,funds:o.funds+m.funds,income:o.income,reputation:o.reputation+m.reputation,harmony:o.harmony+m.harmony,loyalty:55,investment:0,holdings:[],staff:[...staffRoles],history:[`${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`],eventOrder:shuffle([...Array(events.length).keys()])};saveState();show('game');renderGame()}
 function shuffle(a){for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function money(v){return `${v<0?'−':''}£${Math.abs(Math.round(v)).toLocaleString()}`}
