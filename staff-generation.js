@@ -141,3 +141,41 @@ function applicantsForRole(role) {
 function clearApplicantsForRole(role) {
   if (state.staffApplicants) delete state.staffApplicants[role];
 }
+
+// Replace the fixed prototype catalogue with role-based random applicants while
+// preserving the existing staff cards and vacancy controls.
+renderStaff = function () {
+  $('#staff').innerHTML = Object.keys(staffRoleGeneration).map(role => {
+    const employed = state.staff.find(servant => servant.role === role);
+    if (employed) return `<article class="staff-member"><div class="staff-member__heading"><div><strong>${employed.name}</strong><small>${role} · ${money(employed.wage)}/month</small></div><button data-staff-dismiss="${role}">Dismiss</button></div><span class="staff-trait">${employed.trait}</span><p>${employed.description}</p></article>`;
+
+    const applicants = openStaffRole === role
+      ? `<div class="staff-applicants">${applicantsForRole(role).map(candidate => `<article class="staff-candidate"><div><strong>${candidate.name}</strong><small>${money(candidate.wage)}/month</small></div><span class="staff-trait">${candidate.trait}</span><p>${candidate.description}</p><button data-generated-candidate-role="${role}" data-generated-candidate-id="${candidate.id}" ${state.funds < candidate.wage * 3 ? 'disabled' : ''}>Employ</button></article>`).join('')}</div>`
+      : '';
+
+    return `<section class="staff-vacancy"><div class="staff-member__heading"><div><strong>${role}</strong><small>Position vacant · wages ${money(staffRoleGeneration[role].wageMin)}–${money(staffRoleGeneration[role].wageMax)}/month</small></div><button data-review-role="${role}">${openStaffRole === role ? 'Close' : 'Review applicants'}</button></div>${applicants}</section>`;
+  }).join('');
+};
+
+// Use a capture listener so generated applicants are handled before the older
+// prototype candidate listener in seasonal.js.
+document.addEventListener('click', event => {
+  const candidateRole = event.target.dataset.generatedCandidateRole;
+  if (!candidateRole) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const candidate = applicantsForRole(candidateRole).find(person => person.id === event.target.dataset.generatedCandidateId);
+  if (!candidate || state.staff.some(servant => servant.role === candidateRole)) return;
+
+  state.staff.push({
+    ...candidate,
+    eventWeights: { ...candidate.eventWeights },
+    appearance: candidate.appearance || null
+  });
+  clearApplicantsForRole(candidateRole);
+  openStaffRole = null;
+  recordChronicle(`${candidate.name} entered the household as ${candidateRole.toLowerCase()}.`);
+  saveState();
+  renderGame();
+}, true);
