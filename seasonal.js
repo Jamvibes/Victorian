@@ -68,8 +68,36 @@ function renderFamily() {
   const origin = origins.find(item => item.id === state.origin);
   const match = matches.find(item => item.id === state.match);
   const relationship = partnerRelationship();
-  $('#family-list').innerHTML = `<article class="family-member family-member--player"><div class="family-monogram">${state.given.charAt(0)}</div><div><p class="eyebrow">You · Head of household</p><h4>${state.given} ${state.family}</h4><p>${origin?.name || 'Family background unrecorded'}</p></div></article><article class="family-member"><div class="family-monogram">${state.partner.charAt(0)}</div><div class="family-member__body"><p class="eyebrow">Partner</p><h4>${state.partner} ${state.family}</h4><p>${match?.name || 'Marriage details unrecorded'}</p><p class="family-detail">${match?.desc || ''}</p><div class="relationship"><span>Your relationship</span><strong>${relationshipLabel(relationship)} · ${Math.round(relationship)}/100</strong><meter min="0" max="100" value="${relationship}">${relationship}</meter></div></div></article>`;
+  const children = (state.children || []).map(child => {
+    const role = child.gender === 'male' ? 'Son' : 'Daughter';
+    return `<article class="family-member"><div class="family-monogram">${child.given.charAt(0)}</div><div class="family-member__body"><p class="eyebrow">${role} · Age ${child.age}</p><h4>${child.given} ${state.family}</h4><p>${child.trait}</p><div class="relationship"><span>Your relationship</span><strong>${relationshipLabel(child.relationship)} · ${Math.round(child.relationship)}/100</strong><meter min="0" max="100" value="${child.relationship}">${child.relationship}</meter></div></div></article>`;
+  }).join('');
+  $('#family-list').innerHTML = `<article class="family-member family-member--player"><div class="family-monogram">${state.given.charAt(0)}</div><div><p class="eyebrow">You · Head of household</p><h4>${state.given} ${state.family}</h4><p>${origin?.name || 'Family background unrecorded'}</p></div></article><article class="family-member"><div class="family-monogram">${state.partner.charAt(0)}</div><div class="family-member__body"><p class="eyebrow">Partner</p><h4>${state.partner} ${state.family}</h4><p>${match?.name || 'Marriage details unrecorded'}</p><p class="family-detail">${match?.desc || ''}</p><div class="relationship"><span>Your relationship</span><strong>${relationshipLabel(relationship)} · ${Math.round(relationship)}/100</strong><meter min="0" max="100" value="${relationship}">${relationship}</meter></div></div></article>${children}`;
 }
+
+function selectedFamilyCircumstance() {
+  return familyCircumstances.find(item => item.id === $('[name=familyCircumstance]:checked')?.value) || familyCircumstances[0];
+}
+
+function renderChildrenEditor() {
+  const family = selectedFamilyCircumstance();
+  if (!family.children.length) {
+    $('#children-editor').innerHTML = '<p class="family-setup-note">No children are currently part of the household.</p>';
+    return;
+  }
+  $('#children-editor').innerHTML = `<p class="eyebrow">The children</p>${family.children.map((child, index) => `<section class="child-editor"><label class="child-name">Given name<span class="name-entry"><input name="childName${index}" required maxlength="24" value="${child.name}"><button type="button" class="randomize-name" data-randomize-child="${index}">Randomize</button></span></label><label>Place in the family<select name="childGender${index}"><option value="male" ${child.gender === 'male' ? 'selected' : ''}>Son</option><option value="female" ${child.gender === 'female' ? 'selected' : ''}>Daughter</option></select></label><label>Character<select name="childTrait${index}">${childTraits.map(trait => `<option ${trait === child.trait ? 'selected' : ''}>${trait}</option>`).join('')}</select></label><div class="child-age"><span>Age</span><strong>${child.age}</strong><input type="hidden" name="childAge${index}" value="${child.age}"></div></section>`).join('')}`;
+}
+
+function renderFamilyCircumstances() {
+  $('#families').innerHTML = familyCircumstances.map((item, index) => `<label class="choice"><input type="radio" name="familyCircumstance" value="${item.id}" ${index === 0 ? 'checked' : ''}><strong>${item.name}</strong><small>${item.desc}</small></label>`).join('');
+  renderChildrenEditor();
+}
+
+const renderBaseCards = renderCards;
+renderCards = function () {
+  renderBaseCards();
+  renderFamilyCircumstances();
+};
 
 function personalizeCorrespondence(text) {
   return text
@@ -116,6 +144,8 @@ function migrateSeasonalState() {
   state.correspondence ||= 0;
   state.seasonResults ||= [];
   state.holdings ||= [];
+  state.familyCircumstance ||= 'newly-married';
+  state.children ||= [];
   if (!state.relationships) state.relationships = { partner: Number.isFinite(state.harmony) ? state.harmony : 50 };
   if (state.estateIncomeModelVersion !== 2) {
     const incomeOrigin = origins.find(item => item.id === state.origin) || origins[0];
@@ -146,9 +176,18 @@ function migrateSeasonalState() {
 
 newHousehold = function (data) {
   const { o, m } = selections();
+  const familyChoice = familyCircumstances.find(item => item.id === data.get('familyCircumstance')) || familyCircumstances[0];
+  const children = familyChoice.children.map((template, index) => ({
+    id: `child-${index + 1}`,
+    given: data.get(`childName${index}`) || template.name,
+    gender: data.get(`childGender${index}`) || template.gender,
+    age: Number(data.get(`childAge${index}`) || template.age),
+    trait: data.get(`childTrait${index}`) || template.trait,
+    relationship: 65
+  }));
   state = {
     given: data.get('givenName'), family: data.get('familyName'), partner: data.get('partnerName'),
-    origin: o.id, match: m.id, season: 0, correspondence: 0,
+    origin: o.id, match: m.id, familyCircumstance: familyChoice.id, children, season: 0, correspondence: 0,
     seasonResults: [], seasonStart: null, month: 0,
     funds: o.funds + m.funds, income: o.income, incomeSources: o.incomeSources.map(source => ({ ...source })), estateIncomeModelVersion: 2,
     reputation: o.reputation + m.reputation, relationships: { partner: o.partnerRelationship + m.partnerRelationship },
@@ -308,7 +347,17 @@ $('#household-tab').onclick = () => showGameTab('household');
 $('#family-tab').onclick = () => showGameTab('family');
 $('#chronicle-tab').onclick = () => showGameTab('chronicle');
 
+document.addEventListener('change', event => {
+  if (event.target.name === 'familyCircumstance') renderChildrenEditor();
+});
+
 document.addEventListener('click', event => {
+  if (event.target.dataset.randomizeChild !== undefined) {
+    const index = Number(event.target.dataset.randomizeChild);
+    const gender = $(`[name=childGender${index}]`).value;
+    $(`[name=childName${index}]`).value = randomFrom(gender === 'male' ? maleVictorianNames : femaleVictorianNames);
+    return;
+  }
   const reviewRole = event.target.dataset.reviewRole;
   if (reviewRole) {
     openStaffRole = openStaffRole === reviewRole ? null : reviewRole;

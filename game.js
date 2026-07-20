@@ -12,6 +12,20 @@ const matches=[
  {id:'prudent',name:'A prudent understanding',desc:'Mutual esteem and a useful, if modest, settlement.',funds:1800,partnerRelationship:10,reputation:5},
  {id:'arranged',name:'A family arrangement',desc:'Considerable property joins the household; intimacy may follow.',funds:4000,partnerRelationship:-8,reputation:10}
 ];
+const familyCircumstances=[
+ {id:'newly-married',name:'Newly married',desc:'The marriage is recent, and the question of children remains before you.',children:[]},
+ {id:'growing-family',name:'A growing family',desc:'Three young children fill the nursery and schoolroom.',children:[
+  {age:12,gender:'male',name:'Arthur',trait:'Dutiful'},
+  {age:9,gender:'female',name:'Beatrice',trait:'Scholarly'},
+  {age:6,gender:'female',name:'Clara',trait:'Sociable'}
+ ]},
+ {id:'older-children',name:'Older children',desc:'Your children are approaching the decisions that will shape their adult lives.',children:[
+  {age:19,gender:'female',name:'Beatrice',trait:'Accomplished'},
+  {age:17,gender:'male',name:'Edward',trait:'Ambitious'},
+  {age:14,gender:'female',name:'Clara',trait:'Romantic'}
+ ]}
+];
+const childTraits=['Accomplished','Ambitious','Dutiful','Romantic','Scholarly','Sociable','Reserved','Wilful'];
 const staffRoles=[
  {role:'Housekeeper',wage:8,benefit:3},{role:'Cook',wage:7,benefit:2},{role:'Parlour maid',wage:4,benefit:2},{role:'Footman',wage:5,benefit:3},{role:'Governess',wage:6,benefit:2}
 ];
