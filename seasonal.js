@@ -79,6 +79,19 @@ function changePartnerRelationship(amount) {
   state.relationships.partner = Math.max(0, Math.min(100, state.relationships.partner + amount));
 }
 
+function changeNonYoungFamilyRelationships(amount) {
+  changePartnerRelationship(amount);
+  (state.children || []).forEach(child => {
+    if (childAgeGroup(child.age) !== 'young') child.relationship = Math.max(0, Math.min(100, (child.relationship ?? 50) + amount));
+  });
+}
+
+function changeStaffRelationships(amount) {
+  state.staff.forEach(servant => {
+    servant.relationship = Math.max(0, Math.min(100, (servant.relationship ?? 50) + amount));
+  });
+}
+
 clamp = function () {
   state.reputation = Math.max(0, Math.min(100, state.reputation));
   if (state.relationships) state.relationships.partner = Math.max(0, Math.min(100, state.relationships.partner));
@@ -166,6 +179,7 @@ function migrateSeasonalState() {
   state.holdings ||= [];
   state.familyCircumstance ||= 'newly-married';
   state.children ||= [];
+  state.markers ||= {};
   if (!state.relationships) state.relationships = { partner: Number.isFinite(state.harmony) ? state.harmony : 50 };
   if (state.estateIncomeModelVersion !== 2) {
     const incomeOrigin = origins.find(item => item.id === state.origin) || origins[0];
@@ -178,8 +192,8 @@ function migrateSeasonalState() {
   }
   state.staff ||= [];
   state.staff = state.staff.map(servant => {
-    if (servant.name) return servant;
-    return { ...servant, id: `incumbent-${servant.role.toLowerCase().replaceAll(' ', '-')}`, name: `Established ${servant.role}`, trait: 'Experienced', description: 'An experienced servant retained from the household’s earlier arrangements.', eventWeights: {} };
+    if (servant.name) return { ...servant, relationship: servant.relationship ?? 50 };
+    return { ...servant, id: `incumbent-${servant.role.toLowerCase().replaceAll(' ', '-')}`, name: `Established ${servant.role}`, trait: 'Experienced', description: 'An experienced servant retained from the household’s earlier arrangements.', relationship: 50, eventWeights: {} };
   });
   state.correspondencePlan ||= seasonalCorrespondencePlan();
   if (!state.staffSystemVersion) {
@@ -211,7 +225,7 @@ newHousehold = function (data) {
     seasonResults: [], seasonStart: null, month: 0,
     funds: o.funds + m.funds, income: o.income, incomeSources: o.incomeSources.map(source => ({ ...source })), estateIncomeModelVersion: 2,
     reputation: o.reputation + m.reputation, relationships: { partner: o.partnerRelationship + m.partnerRelationship },
-    investment: 0, holdings: [], staff: [],
+    investment: 0, holdings: [], markers: {}, staff: [],
     history: [{ text: `${data.get('givenName')} and ${data.get('partnerName')} ${data.get('familyName')} took possession of the house.`, season: 0, year: 1880, order: 1 }],
     chronicleOrder: 1,
     correspondencePlan: null
@@ -242,11 +256,30 @@ renderGame = function () {
 renderStaff = function () {
   $('#staff').innerHTML = Object.keys(staffCandidates).map(role => {
     const employed = state.staff.find(servant => servant.role === role);
-    if (employed) return `<article class="staff-member"><div class="staff-member__heading"><div><strong>${employed.name}</strong><small>${role} · ${money(employed.wage)}/month</small></div><button data-staff-dismiss="${role}">Dismiss</button></div><span class="staff-trait">${employed.trait}</span><p>${employed.description}</p></article>`;
+    if (employed) return `<article class="staff-member"><div class="staff-member__heading"><div><strong>${employed.name}</strong><small>${role} · ${money(employed.wage)}/month</small></div><button data-staff-dismiss="${role}">Dismiss</button></div><span class="staff-trait">${employed.trait}</span><p>${employed.description}</p><small>Relationship: ${relationshipLabel(employed.relationship)} · ${Math.round(employed.relationship)}/100</small></article>`;
     const applicants = openStaffRole === role ? `<div class="staff-applicants">${staffCandidates[role].map(candidate => `<article class="staff-candidate"><div><strong>${candidate.name}</strong><small>${money(candidate.wage)}/month</small></div><span class="staff-trait">${candidate.trait}</span><p>${candidate.description}</p><button data-candidate-role="${role}" data-candidate-id="${candidate.id}" ${state.funds < candidate.wage * 3 ? 'disabled' : ''}>Employ</button></article>`).join('')}</div>` : '';
     return `<section class="staff-vacancy"><div class="staff-member__heading"><div><strong>${role}</strong><small>Position vacant</small></div><button data-review-role="${role}">${openStaffRole === role ? 'Close' : 'Review applicants'}</button></div>${applicants}</section>`;
   }).join('');
 };
+
+function applyEventEffects(effects) {
+  Object.entries(effects).forEach(([key, value]) => {
+    if (key === 'partnerRelationship' || key === 'harmony') changePartnerRelationship(value);
+    else if (key === 'nonYoungFamilyRelationship') changeNonYoungFamilyRelationships(value);
+    else if (key === 'staffRelationship') changeStaffRelationships(value);
+    else if (key === 'staffBonusPerPerson') state.funds -= value * state.staff.length;
+    else if (key === 'northernRailwayInvestment') {
+      state.markers ||= {};
+      state.markers.northernRailwayInvestment = value;
+    } else if (key !== 'quitUnhappyStaff') state[key] = (state[key] || 0) + value;
+  });
+
+  if (effects.quitUnhappyStaff) {
+    const departing = state.staff.filter(servant => (servant.relationship ?? 50) <= 20);
+    state.staff = state.staff.filter(servant => (servant.relationship ?? 50) > 20);
+    departing.forEach(servant => recordChronicle(`${servant.name} resigned from the household’s service after the complaints below stairs went unanswered.`));
+  }
+}
 
 renderEvent = function () {
   const seasonQueue = state.correspondencePlan[state.season];
@@ -267,10 +300,7 @@ resolveEvent = function (event, index) {
       partnerRelationship: partnerRelationship()
     };
   }
-  Object.entries(choice.effects).forEach(([key, value]) => {
-    if (key === 'partnerRelationship' || key === 'harmony') changePartnerRelationship(value);
-    else state[key] = (state[key] || 0) + value;
-  });
+  applyEventEffects(choice.effects);
   recordChronicle(personalizedResult);
   state.seasonResults.push(personalizedResult);
   clamp();
@@ -388,7 +418,7 @@ document.addEventListener('click', event => {
   if (candidateRole) {
     const candidate = staffCandidates[candidateRole].find(person => person.id === event.target.dataset.candidateId);
     if (candidate && !state.staff.some(servant => servant.role === candidateRole)) {
-      state.staff.push({ ...candidate, eventWeights: { ...candidate.eventWeights } });
+      state.staff.push({ ...candidate, relationship: 50, eventWeights: { ...candidate.eventWeights } });
       openStaffRole = null;
       recordChronicle(`${candidate.name} entered the household as ${candidateRole.toLowerCase()}.`);
       saveState();

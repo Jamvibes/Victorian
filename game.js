@@ -64,26 +64,26 @@ const investmentTypes=[
  {id:'venture',name:'A commercial venture',stake:500,risk:.43,upside:.58,downside:.52,reputation:-1}
 ];
 const events=[
- {id:'society',title:'An Invitation from Lady Ashcombe',body:'An invitation arrives for dinner at Ashcombe Hall. Your present evening clothes will be noticed, though declining the first invitation may be noticed more.',choices:[
-  {label:'Attend in suitable new clothes',note:'£95 · reputation likely to rise',effects:{funds:-95,reputation:9,partnerRelationship:2},result:'The evening passes handsomely, and your name appears in several promising conversations.'},
-  {label:'Attend without extravagance',note:'A social risk',effects:{reputation:2,partnerRelationship:-1},result:'You are received politely. One or two glances linger longer than courtesy requires.'},
-  {label:'Send regrets',note:'Preserve funds · lose an opening',effects:{reputation:-5,partnerRelationship:2},result:'The household enjoys a quiet evening, while Ashcombe Hall proceeds without you.'}]},
- {id:'railway',title:'The Northern Railway Prospectus',body:'Your banker offers shares in a new northern line. The engineers are confident; the newspapers are divided.',choices:[
-  {label:'Subscribe £500',note:'Risk capital for an uncertain return',effects:{funds:-500,investment:500},result:'The certificates are placed in the strongbox. Their value will be known in time.'},
-  {label:'Purchase £200 in shares',note:'A measured exposure',effects:{funds:-200,investment:200},result:'A modest parcel of shares joins the family papers.'},
-  {label:'Decline the speculation',note:'No risk, no return',effects:{reputation:-1},result:'Your banker inclines his head, revealing neither approval nor disappointment.'}]},
- {id:'staff_dispute',title:'A Complaint Below Stairs',body:'The housekeeper reports that long hours and economies in the kitchen have provoked talk of resignations.',choices:[
-  {label:'Increase every servant’s allowance',note:'£60 · preserve the household’s good name',effects:{funds:-60,reputation:2},result:'The gesture is discussed warmly below stairs, though the account book feels it at once.'},
-  {label:'Hear the staff individually',note:'Time and patience',effects:{partnerRelationship:3},result:'Grievances are aired. Not all are solved, but the household feels heard.'},
-  {label:'Insist upon discipline',note:'Save money · risk public complaint',effects:{reputation:-3},result:'Order returns quickly. Goodwill does not.'}]},
- {id:'partner_debt',title:'Your Partner’s Confidence',body:'Your partner has quietly supported a struggling relation and now asks the household to cover a debt of £140.',choices:[
-  {label:'Settle the debt without reproach',note:'£140 · strengthen the marriage',effects:{funds:-140,partnerRelationship:13},result:'Relief gives way to gratitude; the matter remains entirely private.'},
-  {label:'Pay half, with conditions',note:'£70 · a compromise',effects:{funds:-70,partnerRelationship:3},result:'A solution is reached, though neither of you calls it generous.'},
-  {label:'Refuse the request',note:'Protect the estate',effects:{partnerRelationship:-12,reputation:-3},result:'The estate is protected. The silence at dinner is considerable.'}]},
- {id:'village_fever',title:'A Fever in the Village',body:'Illness has reached several cottages. The vicar asks you to fund a temporary nurse and clean water carts.',choices:[
-  {label:'Meet the full expense',note:'£110 · duty publicly fulfilled',effects:{funds:-110,reputation:11,partnerRelationship:3},result:'The measures are effective, and gratitude spreads further than the fever.'},
-  {label:'Contribute £40 discreetly',note:'A limited but sincere response',effects:{funds:-40,reputation:4},result:'The vicar thanks you. The need, however, remains greater than the provision.'},
-  {label:'The parish must bear its duties',note:'No expense',effects:{reputation:-10},result:'The decision is lawful and much discussed.'}]}
+ {id:'society',title:'An Invitation from Lady Ashcombe',body:'An invitation arrives for dinner at Ashcombe Hall.',choices:[
+  {label:'Attend in suitable new clothes',note:'−£15 · +3 Reputation · +2 relationships with family aged 9 and above',effects:{funds:-15,reputation:3,nonYoungFamilyRelationship:2},result:'The family attends in suitable new clothes, and the evening strengthens both their standing and their affection for one another.'},
+  {label:'Attend without extravagance',note:'+1 Reputation · −1 relationships with family aged 9 and above',effects:{reputation:1,nonYoungFamilyRelationship:-1},result:'The family attends without extravagance. The invitation improves their standing, though the economies cause some private irritation.'},
+  {label:'Send regrets',note:'−3 Reputation',effects:{reputation:-3},result:'Regrets are sent to Ashcombe Hall, and the missed social opportunity is noticed.'}]},
+ {id:'railway',title:'The Northern Railway Prospectus',body:'The banker offers shares in a speculative railway.',choices:[
+  {label:'Substantial investment',note:'Purchase £500 in shares',effects:{funds:-500,investment:500,northernRailwayInvestment:'substantial'},result:'A substantial parcel of Northern Railway shares is purchased and placed among the family papers.'},
+  {label:'Small investment',note:'Purchase £200 in shares',effects:{funds:-200,investment:200,northernRailwayInvestment:'small'},result:'A small parcel of Northern Railway shares is purchased and placed among the family papers.'},
+  {label:'Decline',note:'No change',effects:{},result:'The railway prospectus is returned without a subscription.'}]},
+ {id:'staff_dispute',title:'A Complaint Below Stairs',body:'Long hours and household economies have provoked discussion of resignations.',choices:[
+  {label:'Give the staff a bonus',note:'£2 per hired staff member · +3 Reputation · +3 staff relationships',effects:{staffBonusPerPerson:2,reputation:3,staffRelationship:3},result:'Every hired servant receives a bonus, restoring some goodwill below stairs and reflecting well upon the household.'},
+  {label:'Give the staff a day off',note:'+1 relationship with all hired staff',effects:{staffRelationship:1},result:'The servants receive a day of rest, and return to their duties in better spirits.'},
+  {label:'Ignore their requests',note:'−1 relationship with all hired staff · staff at 20 or below quit',effects:{staffRelationship:-1,quitUnhappyStaff:true},result:'The requests are ignored. Resentment settles below stairs, and the least contented servants reconsider their positions.'}]},
+ {id:'partner_debt',title:'Your Partner’s Confidence',body:'Your partner asks the household to cover a relative’s £100 debt.',choices:[
+  {label:'Settle the debt',note:'−£100 · +10 Partner Relationship',effects:{funds:-100,partnerRelationship:10},result:'The relative’s debt is settled in full, and {partner} is deeply grateful for the household’s support.'},
+  {label:'Pay half',note:'−£50 · +5 Partner Relationship',effects:{funds:-50,partnerRelationship:5},result:'Half the debt is paid. {partner} accepts the compromise with genuine appreciation.'},
+  {label:'Refuse',note:'−5 Partner Relationship',effects:{partnerRelationship:-5},result:'The request is refused, leaving a quiet distance between you and {partner}.'}]},
+ {id:'village_fever',title:'A Fever in the Village',body:'The vicar requests help funding a nurse and clean-water carts.',choices:[
+  {label:'Meet the full expense',note:'−£50 · +5 Reputation · +2 staff relationships',effects:{funds:-50,reputation:5,staffRelationship:2},result:'A nurse and clean-water carts are fully funded, earning gratitude in the village and among the household staff.'},
+  {label:'Give them a small donation',note:'−£10 · +1 Reputation',effects:{funds:-10,reputation:1},result:'A small donation is sent to the vicar, offering modest assistance to the village.'},
+  {label:'Leave it to the parish',note:'−1 Reputation',effects:{reputation:-1},result:'The matter is left to the parish, and the household’s limited response is quietly noted.'}]}
 ];
 let state=null;
 let finishAfterSummary=false;
